@@ -1,12 +1,14 @@
 package com.ipaam.ai.transfer.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 public class IntentResult {
     private String action;
-    private int amount;
-    private String accountType;
+    private String amount;
+    private String fromAccount;
+    private String toAccount;
+
 }

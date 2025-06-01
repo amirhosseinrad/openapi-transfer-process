@@ -1,31 +1,28 @@
 package com.ipaam.ai.transfer.client;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-
 @Service
+@RequiredArgsConstructor
 public class WhisperClient {
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
-    public WhisperClient(WebClient.Builder builder) {
-        this.webClient = builder
-                .baseUrl("http://localhost:5000") // Local Whisper API
-                .build();
-    }
-
-    public Mono<String> transcribe(MultipartFile file) throws IOException {
+    public Mono<String> transcribe(FilePart filePart) {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", file.getResource())
-                .header("Content-Disposition", "form-data; name=file; filename=" + file.getOriginalFilename());
+        builder.part("file", filePart)
+                .header("Content-Disposition", "form-data; name=file; filename=" + filePart.filename())
+                .contentType(MediaType.MULTIPART_FORM_DATA);
 
-        return webClient.post()
+        return webClientBuilder.baseUrl("http://localhost:5000")
+                .build()
+                .post()
                 .uri("/transcribe")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder.build()))

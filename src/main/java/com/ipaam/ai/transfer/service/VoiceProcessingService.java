@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ipaam.ai.transfer.client.OpenAiWebClient;
 import com.ipaam.ai.transfer.client.WhisperClient;
 import com.ipaam.ai.transfer.model.IntentResult;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -20,27 +20,23 @@ public class VoiceProcessingService {
         this.whisperClient = whisperClient;
     }
 
-    public String processIntent(String transcript) {
-        return openAIClient.chat("Extract intent from: " + transcript)
-                .block(); // Optional: wrap with timeout
-    }
-
-    public Mono<String> transcribe(MultipartFile audioFile) throws IOException {
-        // Call Whisper API (or local Whisper service)
-        // Upload audio and get transcript
+    public Mono<String> transcribe(FilePart audioFile) throws IOException {
         return whisperClient.transcribe(audioFile); // Abstracted
     }
 
-    public IntentResult extractIntent(String transcript) throws JsonProcessingException {
-        // Send transcript to OpenAI API for intent parsing
-        String prompt = "Extract the intent from this banking command: \"" + transcript + "\". "
-                + "Return JSON like {\"action\":\"withdraw\", \"amount\":2000000, \"accountType\":\"salary\"}";
-
-        String result = String.valueOf(openAIClient.chat(prompt));
-        return parseJsonToIntent(result);
+    public Mono<IntentResult> extractIntent(Mono<String> transcript) throws JsonProcessingException {
+        return transcript.flatMap(s -> {
+            String prompt = "Extract the intent from this banking command: \"" + s + "\". "
+                    + "just Return JSON like {" +
+                    "\"action\":\"withdraw\", " +
+                    "\"amount\":2000000, " +
+                    "\"fromAccount\":\"source account\" + " +
+                    "\"toAccount\":\"destination account\"}";
+            return openAIClient.chat(prompt); // this already returns Mono<IntentResult>
+        });
     }
 
-    public boolean withdraw(String userId, int amount, String accountType) {
+    public boolean withdraw(String action, String amount, String fromAccount, String toAccount ) {
         return Boolean.TRUE;
         // Call your banking withdrawal module
        // return bankingService.withdraw(userId, amount, accountType);
