@@ -1,0 +1,62 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0" version="27.1.1">
+  <diagram name="Page-1" id="iZzkB2YjQ0Gdf6qLwqvi">
+    <mxGraphModel dx="1511" dy="1527" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="684uXd6RHOkGfTgg1Wcb-1" target="684uXd6RHOkGfTgg1Wcb-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-1" value="spring-ai-app" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="257" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="684uXd6RHOkGfTgg1Wcb-2" target="684uXd6RHOkGfTgg1Wcb-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-2" value="whisper-api" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="457" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="684uXd6RHOkGfTgg1Wcb-4" target="684uXd6RHOkGfTgg1Wcb-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-4" value="native or AI engine" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="657" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-6" value="&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 204, 204));&quot;&gt;text to json format&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="657" y="270" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-7" value="&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 204, 204));&quot;&gt;voice to text&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="472" y="270" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-8" value="&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 204, 204));&quot;&gt;get data from user&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="257" y="270" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-9" value="call specific api for &lt;b&gt;&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 153, 0));&quot;&gt;action&lt;/span&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="857" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-12" value="" style="curved=1;endArrow=classic;html=1;rounded=0;exitX=0.849;exitY=1.062;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="684uXd6RHOkGfTgg1Wcb-4">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="847" y="390" as="sourcePoint" />
+            <mxPoint x="897" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="897" y="390" />
+              <mxPoint x="847" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-13" value="&lt;b&gt;&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 102, 204));&quot;&gt;/chat&lt;/span&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="292" y="360" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-14" value="&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 102, 204));&quot;&gt;&lt;b&gt;/transcribe&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="472" y="360" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-15" value="&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 102, 204));&quot;&gt;&lt;b&gt;/analysis&lt;/b&gt;&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="682" y="360" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="684uXd6RHOkGfTgg1Wcb-16" value="&lt;b&gt;&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(153, 0, 0));&quot;&gt;ipaam-ai-app-structure&lt;/span&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="192" y="210" width="150" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
