@@ -30,7 +30,7 @@ public class VoiceController {
             }
     )
     @PostMapping(value = "/withdraw", consumes = "multipart/form-data")
-    public ResponseEntity<String> processVoice(
+    public Mono<ResponseEntity<String>> processVoice(
             @RequestPart("audioFile") FilePart audioFile,
             @RequestHeader("user-id") Long userId) {
 
@@ -46,7 +46,7 @@ public class VoiceController {
                         }
                     })
                     .flatMap(intent -> {
-                        if ("withdraw".equals(intent.getAction())) {
+                        if ("withdrawal".equals(intent.getAction())) {
                             return Mono.fromCallable(() ->
                                             voiceProcessingService.withdraw(intent.getAction(), intent.getAmount(),intent.getFromAccount(),intent.getToAccount())
                                     )
@@ -63,11 +63,11 @@ public class VoiceController {
                         return Mono.just(ResponseEntity.internalServerError()
                                 .body("Internal server error: " + e.getMessage()));
                     })
-                    .block(); // blocking here to return ResponseEntity synchronously
+                    ; // blocking here to return ResponseEntity synchronously
         } catch (Exception e) {
             log.error("Unexpected error", e);
-            return ResponseEntity.internalServerError()
-                    .body("Unexpected error: " + e.getMessage());
+            return Mono.just(ResponseEntity.internalServerError()
+                    .body("Unexpected error: " + e.getMessage()));
         }
     }
 }
