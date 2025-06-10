@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ipaam.ai.transfer.model.IntentResult;
 import com.ipaam.ai.transfer.model.OpenRouterResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,10 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class OpenAiWebClient {private final WebClient webClient;
+public class OpenAiWebClient {
 
-
+    @Qualifier("aiWebClient")
+    private final WebClient webClient;
 
     public OpenAiWebClient(
             WebClient.Builder webClientBuilder,
@@ -42,7 +44,7 @@ public class OpenAiWebClient {private final WebClient webClient;
 
     public Mono<IntentResult> chat(String prompt) {
         Map<String, Object> payload = Map.of(
-                "model", "deepseek/deepseek-r1-0528-qwen3-8b:free", // a known free model on OpenRouter
+                "model", "google/gemini-pro-1.5", // a known free model on OpenRouter
                 "messages", List.of(Map.of("role", "user", "content", prompt)),
                 "max_tokens", 1000
         );
@@ -80,4 +82,39 @@ public class OpenAiWebClient {private final WebClient webClient;
         }
         return responseBody; // fallback
     }
+
+    /*private boolean isEmptyResponseException(Throwable ex) {
+        if (ex instanceof RuntimeException && ex.getCause() instanceof MismatchedInputException) {
+            return ex.getCause().getMessage() != null &&
+                    ex.getCause().getMessage().contains("No content to map due to end-of-input");
+        }
+        return false;
+    }
+
+    public Mono<IntentResult> analyzeText(String text) {
+        return webClient.post()
+                .uri("/analyze")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(new AnalyzeRequest(text))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new RuntimeException("4xx Error: " + errorBody))))
+                .onStatus(HttpStatusCode::is5xxServerError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorBody -> Mono.error(new RuntimeException("5xx Error: " + errorBody))))
+                .bodyToMono(String.class)
+                .map(response -> {
+                    String cleanJson = extractJsonFromMarkdown(response);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        IntentResult intentResult = objectMapper.readValue(cleanJson, IntentResult.class);
+                        log.info("IntentResult: {}", intentResult);
+                        return intentResult;
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("Error parsing IntentResult", e);
+                    }
+                });
+
+    }*/
 }

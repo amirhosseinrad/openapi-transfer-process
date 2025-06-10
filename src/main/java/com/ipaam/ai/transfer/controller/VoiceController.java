@@ -10,9 +10,11 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 import static org.hibernate.query.sqm.tree.SqmNode.log;
 
-@RequestMapping("/api/voice")
+@RequestMapping("/api")
 @RestController
 public class VoiceController {
 
@@ -23,13 +25,13 @@ public class VoiceController {
     }
 
     @Operation(
-            summary = "Process a voice command for withdrawal",
-            description = "Accepts an MP3 file and processes it to perform a withdrawal.",
+            summary = "Process a voice command for transfer",
+            description = "Accepts a voice file and processes it to perform a transfer.",
             parameters = {
                     @Parameter(name = "user-id", description = "User ID", required = true, in = ParameterIn.HEADER)
             }
     )
-    @PostMapping(value = "/withdraw", consumes = "multipart/form-data")
+    @PostMapping(value = "/transfer", consumes = "multipart/form-data")
     public Mono<ResponseEntity<String>> processVoice(
             @RequestPart("audioFile") FilePart audioFile,
             @RequestHeader("user-id") Long userId) {
@@ -48,7 +50,7 @@ public class VoiceController {
                     .flatMap(intent -> {
                         if ("withdrawal".equals(intent.getAction())) {
                             return Mono.fromCallable(() ->
-                                            voiceProcessingService.withdraw(intent.getAction(), intent.getAmount(),intent.getFromAccount(),intent.getToAccount())
+                                            voiceProcessingService.withdraw(intent.getAction(), intent.getAmount(), intent.getFromAccount(), intent.getToAccount())
                                     )
                                     .map(success -> success
                                             ? ResponseEntity.ok("Withdrawal successful.")
@@ -69,5 +71,16 @@ public class VoiceController {
             return Mono.just(ResponseEntity.internalServerError()
                     .body("Unexpected error: " + e.getMessage()));
         }
+    }
+    @PostMapping(value = "/transcribe",  consumes = "multipart/form-data")
+    public Mono<ResponseEntity<String>> speechToText(@RequestPart("audioFile") FilePart audioFile) throws IOException {
+        return voiceProcessingService.transcribe(audioFile)
+                .map(transcript -> ResponseEntity.ok().body(transcript))
+                .onErrorResume(e -> {
+                    log.error("Unexpected error", e);
+                    return Mono.just(ResponseEntity.internalServerError()
+                            .body("Unexpected error: " + e.getMessage()));
+                });
+
     }
 }
