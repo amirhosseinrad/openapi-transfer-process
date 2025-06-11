@@ -1,10 +1,6 @@
 package com.ipaam.ai.transfer.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ipaam.ai.transfer.service.VoiceProcessingService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +16,12 @@ public class VoiceController {
 
     private final VoiceProcessingService voiceProcessingService;
 
+
     public VoiceController(VoiceProcessingService voiceProcessingService) {
         this.voiceProcessingService = voiceProcessingService;
     }
 
-    @Operation(
+/*    @Operation(
             summary = "Process a voice command for transfer",
             description = "Accepts a voice file and processes it to perform a transfer.",
             parameters = {
@@ -71,7 +68,7 @@ public class VoiceController {
             return Mono.just(ResponseEntity.internalServerError()
                     .body("Unexpected error: " + e.getMessage()));
         }
-    }
+    }*/
     @PostMapping(value = "/transcribe",  consumes = "multipart/form-data")
     public Mono<ResponseEntity<String>> speechToText(@RequestPart("audioFile") FilePart audioFile) throws IOException {
         return voiceProcessingService.transcribe(audioFile)

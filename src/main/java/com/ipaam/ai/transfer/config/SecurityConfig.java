@@ -25,10 +25,12 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
                 .cors(ServerHttpSecurity.CorsSpec::disable)
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(
                                 "/api/extract",
                                 "/v3/api-docs/**",
+                                "/api/greeting**",
                                 "/v3/api-docs**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",

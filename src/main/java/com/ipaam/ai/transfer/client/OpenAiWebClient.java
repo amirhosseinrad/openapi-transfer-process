@@ -83,7 +83,7 @@ public class OpenAiWebClient {
         return responseBody; // fallback
     }
 
-    /*private boolean isEmptyResponseException(Throwable ex) {
+ /*private boolean isEmptyResponseException(Throwable ex) {
         if (ex instanceof RuntimeException && ex.getCause() instanceof MismatchedInputException) {
             return ex.getCause().getMessage() != null &&
                     ex.getCause().getMessage().contains("No content to map due to end-of-input");
@@ -116,5 +116,60 @@ public class OpenAiWebClient {
                     }
                 });
 
+    }*/
+/*
+
+    @Qualifier("aiWebClient")
+    private final WebClient webClient;
+
+    @Value("${openai.api.key}")  // Ensure you have your OpenAI API key stored in your properties file
+    private String apiKey;
+
+    public OpenAiWebClient(
+            WebClient.Builder webClientBuilder) {
+
+        this.webClient = webClientBuilder
+                .baseUrl("https://api.openai.com/v1")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
+*/
+
+    // Method to list available models (OpenAI models)
+ /*   public Mono<String> listModels() {
+        return webClient.get()
+                .uri("/models")
+                .retrieve()
+                .bodyToMono(String.class)
+                .doOnNext(modelsJson -> System.out.println("Available models: " + modelsJson));
+    }
+
+    public Mono<IntentResult> chat(String prompt) {
+        Map<String, Object> payload = Map.of(
+                "model", "gpt-3.5-turbo",  // You can change the model name to any available model
+                "messages", List.of(Map.of("role", "user", "content", prompt)),
+                "max_tokens", 1000
+        );
+
+        return webClient.post()
+                .uri("/chat/completions")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(OpenAiResponse.class) // Use OpenAiResponse record here
+                .flatMap(response -> {
+                    if (response.choices() == null || response.choices().isEmpty()) {
+                        return Mono.error(new RuntimeException("No choices returned from OpenAI"));
+                    }
+                    String content = response.choices().get(0).message().content();
+                    try {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        IntentResult intentResult = objectMapper.readValue(content, IntentResult.class);
+                        log.info("Received IntentResult: " + intentResult);
+                        return Mono.just(intentResult);
+                    } catch (Exception e) {
+                        return Mono.error(new RuntimeException("Failed to parse IntentResult: " + e.getMessage(), e));
+                    }
+                });
     }*/
 }
