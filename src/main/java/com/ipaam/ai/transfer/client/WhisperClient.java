@@ -10,9 +10,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-@RequiredArgsConstructor
 public class WhisperClient {
     private final WebClient.Builder webClientBuilder;
+
+    public WhisperClient(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
+    }
 
     public Mono<String> transcribe(FilePart filePart) {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();

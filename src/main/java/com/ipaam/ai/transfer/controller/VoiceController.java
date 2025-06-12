@@ -1,83 +1,144 @@
 package com.ipaam.ai.transfer.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ipaam.ai.transfer.model.IntentResult;
+import com.ipaam.ai.transfer.model.transfer.TransferRequest;
+import com.ipaam.ai.transfer.model.whitelist.WhitelistProperties;
+import com.ipaam.ai.transfer.service.BankingService;
 import com.ipaam.ai.transfer.service.VoiceProcessingService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 @RequestMapping("/api")
 @RestController
+@Slf4j
 public class VoiceController {
 
     private final VoiceProcessingService voiceProcessingService;
+    private final BankingService bankingService;
+    private final WhitelistProperties whitelistProperties;
 
-
-    public VoiceController(VoiceProcessingService voiceProcessingService) {
+    public VoiceController(VoiceProcessingService voiceProcessingService, BankingService bankingService, WhitelistProperties whitelistProperties) {
         this.voiceProcessingService = voiceProcessingService;
+        this.bankingService = bankingService;
+        this.whitelistProperties = whitelistProperties;
     }
 
-/*    @Operation(
-            summary = "Process a voice command for transfer",
-            description = "Accepts a voice file and processes it to perform a transfer.",
-            parameters = {
-                    @Parameter(name = "user-id", description = "User ID", required = true, in = ParameterIn.HEADER)
-            }
-    )
-    @PostMapping(value = "/transfer", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<String>> processVoice(
-            @RequestPart("audioFile") FilePart audioFile,
-            @RequestHeader("user-id") Long userId) {
+    @PostMapping(value = "/chat", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<ResponseEntity<String>> chat(@RequestPart("audioFile") FilePart audioFile,
+                                             @RequestParam("nationalCode") String nationalCode) {
 
-        try {
-            return voiceProcessingService.transcribe(audioFile)
-                    .flatMap(transcript -> {
-                        try {
-                            // extractIntent returns Mono<Intent>
-                            return voiceProcessingService.extractIntent(Mono.just(transcript));
-                        } catch (JsonProcessingException e) {
-                            // convert checked exception to Mono.error
-                            return Mono.error(e);
+        return resolveWhitelistEntry(nationalCode)
+                .flatMap(entry -> {
+                            try {
+                                return voiceProcessingService.transcribe(audioFile)
+                                        .flatMap(transcript -> {
+                                            try {
+                                                return voiceProcessingService.extractIntent(Mono.just(transcript), entry.getFromAccount(), entry.getToAccount());
+                                            } catch (JsonProcessingException e) {
+                                                return Mono.error(new RuntimeException("Failed to extract intent", e));
+                                            }
+                                        })
+                                        .flatMap(this::routeIntent);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
-                    })
-                    .flatMap(intent -> {
-                        if ("withdrawal".equals(intent.getAction())) {
-                            return Mono.fromCallable(() ->
-                                            voiceProcessingService.withdraw(intent.getAction(), intent.getAmount(), intent.getFromAccount(), intent.getToAccount())
-                                    )
-                                    .map(success -> success
-                                            ? ResponseEntity.ok("Withdrawal successful.")
-                                            : ResponseEntity.badRequest().body("Withdrawal failed.")
-                                    );
-                        } else {
-                            return Mono.just(ResponseEntity.badRequest().body("Unsupported voice command."));
-                        }
-                    })
-                    .onErrorResume(e -> {
-                        log.error("Error during voice processing", e);
-                        return Mono.just(ResponseEntity.internalServerError()
-                                .body("Internal server error: " + e.getMessage()));
-                    })
-                    ; // blocking here to return ResponseEntity synchronously
-        } catch (Exception e) {
-            log.error("Unexpected error", e);
-            return Mono.just(ResponseEntity.internalServerError()
-                    .body("Unexpected error: " + e.getMessage()));
-        }
-    }*/
-    @PostMapping(value = "/transcribe",  consumes = "multipart/form-data")
-    public Mono<ResponseEntity<String>> speechToText(@RequestPart("audioFile") FilePart audioFile) throws IOException {
-        return voiceProcessingService.transcribe(audioFile)
-                .map(transcript -> ResponseEntity.ok().body(transcript))
+                )
                 .onErrorResume(e -> {
-                    log.error("Unexpected error", e);
+                    log.error("Error during voice chat processing", e);
                     return Mono.just(ResponseEntity.internalServerError()
-                            .body("Unexpected error: " + e.getMessage()));
+                            .body("Internal server error: " + e.getMessage()));
                 });
+    }
 
+    private Mono<WhitelistProperties.WhitelistEntry> resolveWhitelistEntry(String nationalCode) {
+        return whitelistProperties.getEntries().stream()
+                .filter(entry -> entry.getNationalCode().equals(nationalCode))
+                .findFirst()
+                .map(Mono::just)
+                .orElseGet(() -> Mono.error(new IllegalArgumentException("⛔ National code not whitelisted.")));
+    }
+
+    private Mono<ResponseEntity<String>> routeIntent(IntentResult intent) {
+        if (!"1".equals(intent.getStatus())) {
+            return Mono.just(ResponseEntity.badRequest().body("❌ Incomplete intent: " + intent.getMessage()));
+        }
+
+        return switch (intent.getAction().toLowerCase()) {
+            case "transfer" -> handleTransfer(intent);
+            // Add more cases for other banking actions later:
+            // case "withdraw" -> handleWithdraw(intent);
+            // case "deposit" -> handleDeposit(intent);
+            default -> Mono.just(ResponseEntity.badRequest()
+                    .body("⛔ Unsupported action: " + intent.getAction()));
+        };
+    }
+
+    private Mono<ResponseEntity<String>> handleTransfer(IntentResult intent) {
+        return askUserToConfirm(intent)
+                .flatMap(confirmed -> {
+                    if (!confirmed) {
+                        return Mono.just(ResponseEntity.badRequest().body("🚫 Transfer not confirmed by user."));
+                    }
+
+                    TransferRequest request = mapToTransferRequest(intent);
+                    return bankingService.transferFunds(request)
+                            .map(response -> {
+                                if ("SUCCESS".equalsIgnoreCase(response.status())) {
+                                    String msg = String.format(
+                                            "✅ Transfer successful!\n🆔 Transaction ID: %s\n📄 Tracking No: %s\n📅 Date: %s",
+                                            response.transactionId(),
+                                            response.trackingNumber(),
+                                            response.transactionDate()
+                                    );
+                                    return ResponseEntity.ok(msg);
+                                } else {
+                                    return ResponseEntity.badRequest().body("❌ Transfer failed: " + response.message());
+                                }
+                            });
+                });
+    }
+
+    private Mono<Boolean> askUserToConfirm(IntentResult intent) {
+        // In real system, prompt user here. For now simulate "yes".
+        String message = String.format("Do you confirm transfer of %s from %s to %s?",
+                intent.getAmount(), intent.getFromAccount(), intent.getToAccount());
+
+       // log.info("🔔 Asking user confirmation: {}", message);
+
+        // Simulate confirmation (replace with actual logic)
+        return Mono.just(true); // Simulated user confirmation
+    }
+
+    private TransferRequest mapToTransferRequest(IntentResult intent) {
+        return new TransferRequest(
+                UUID.randomUUID().toString(),             // transactionId
+                null,                                     // transferBillNumber
+                intent.getFromAccount(),                 // sourceAccount
+                "TRANSFER",                               // documentItemType
+                "001",                                    // branchCode (default/fake)
+                new BigDecimal(intent.getAmount()),       // sourceAmount
+                "Voice-initiated transfer",               // sourceComment
+                List.of(new TransferRequest.Creditor(
+                        intent.getToAccount(),            // destinationAccount
+                        "TRANSFER",                       // documentItemType
+                        "001",                            // branchCode
+                        new BigDecimal(intent.getAmount()), // destinationAmount
+                        "Voice transfer to " + intent.getToAccount() // destinationComment
+                ))
+        );
     }
 }

@@ -2,19 +2,18 @@ package com.ipaam.ai.transfer.service;
 
 import com.ipaam.ai.transfer.model.transfer.TransferRequest;
 import com.ipaam.ai.transfer.model.transfer.TransferResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-public class BankingTransferService {
+public class BankingService {
 
     @Qualifier("bankingWebClient")
     private final WebClient webClient;
 
-    public BankingTransferService(@Qualifier("bankingWebClient") WebClient webClient) {
+    public BankingService(@Qualifier("bankingWebClient") WebClient webClient) {
         this.webClient = webClient;
     }
 

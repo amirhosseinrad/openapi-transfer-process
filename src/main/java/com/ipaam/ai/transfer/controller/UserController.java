@@ -30,50 +30,6 @@ public class UserController {
         this.whitelistProperties = whitelistProperties;
     }
 
-/*    @GetMapping("/profile")
-    public ResponseEntity<Map<String, Object>> getUserProfile(@AuthenticationPrincipal Jwt jwt) {
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("email", jwt.getClaim("email"));
-        profile.put("national_code", jwt.getClaim("national_code"));
-        profile.put("birthdate", jwt.getClaim("birthdate"));
-        profile.put("roles", jwt.getClaim("roles"));
-
-        return ResponseEntity.ok(profile);
-    }*/
-
-/*    @GetMapping("/check-admin")
-    public ResponseEntity<String> checkAdmin(@AuthenticationPrincipal Jwt jwt) {
-        if (jwt.getClaimAsStringList("roles").contains("ai_admin")) {
-            return ResponseEntity.ok("User is an admin");
-        }
-        return ResponseEntity.ok("User is not an admin");
-    }*/
-
-/*    @GetMapping("/greeting")
-    public Mono<Greeting> getCustomerIdentity(@AuthenticationPrincipal Jwt jwt) {
-        String nationalCode = jwt.getClaim("national_code");
-        String birthDate = jwt.getClaim("birthdate");
-
-        return customerInfoService.getCustomerInfo(nationalCode, birthDate)
-                .flatMap(response -> {
-                    String name = response.result().data().name();
-                    String greeting = String.format(greetingMessage, name);
-                    return Mono.just(new Greeting(greeting));
-                })
-                .onErrorResume(e -> Mono.just(new Greeting(fallbackMessage)));
-    }*/
-
-/*   @PostMapping("/greeting")
-    public Mono<Greeting> getCustomerIdentity(@RequestParam String nationalCode, @RequestParam String birthDate) {
-        return customerInfoService.getCustomerInfo(nationalCode, birthDate)
-                .flatMap(response -> {
-                    String name = response.result().data().name();
-                    String greeting = String.format(greetingMessage, name);
-                    return Mono.just(new Greeting(greeting));
-                })
-                .onErrorResume(e -> Mono.just(new Greeting(fallbackMessage)));
-    }*/
-
     @PostMapping("/greeting")
     public Mono<Greeting> getCustomerIdentity(@RequestParam String nationalCode, @RequestParam String birthDate) {
         Optional<WhitelistProperties.WhitelistEntry> matchedEntry = whitelistProperties.getEntries().stream()
@@ -88,9 +44,6 @@ public class UserController {
                 .flatMap(response -> {
                     String name = response.result().data().name();
                     String greeting = String.format(greetingMessage, name);
-                    // You can also use:
-                    // matchedEntry.get().getFromAccount()
-                    // matchedEntry.get().getToAccount()
                     return Mono.just(new Greeting(greeting));
                 })
                 .onErrorResume(e -> Mono.just(new Greeting(fallbackMessage)));

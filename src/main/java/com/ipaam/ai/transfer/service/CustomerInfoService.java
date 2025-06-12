@@ -13,7 +13,6 @@ public class CustomerInfoService {
     public CustomerInfoService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("http://192.168.179.20:8290").build();
     }
-
     public Mono<CustomerInfoResponse> getCustomerInfo(String nationalCode, String birthDate) {
         return webClient.get()
                 .uri("/api/corebanking/customers/v1.0/identity/{nationalCode}/{birthDate}",
