@@ -1,6 +1,7 @@
 package com.ipaam.ai.transfer.client;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.codec.multipart.FilePart;
@@ -12,6 +13,8 @@ import reactor.core.publisher.Mono;
 @Service
 public class WhisperClient {
     private final WebClient.Builder webClientBuilder;
+    @Value("${whisper.server.address}")
+    private String whisperServerAddress;
 
     public WhisperClient(WebClient.Builder webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
@@ -23,7 +26,7 @@ public class WhisperClient {
                 .header("Content-Disposition", "form-data; name=file; filename=" + filePart.filename())
                 .contentType(MediaType.MULTIPART_FORM_DATA);
 
-        return webClientBuilder.baseUrl("http://localhost:5000")
+        return webClientBuilder.baseUrl(whisperServerAddress)
                 .build()
                 .post()
                 .uri("/transcribe")

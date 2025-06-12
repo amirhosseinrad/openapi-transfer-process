@@ -16,10 +16,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-
-import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 @RequestMapping("/api")
 @RestController
@@ -58,7 +55,7 @@ public class VoiceController {
                         }
                 )
                 .onErrorResume(e -> {
-                    log.error("Error during voice chat processing", e);
+                //    log.error("Error during voice chat processing", e);
                     return Mono.just(ResponseEntity.internalServerError()
                             .body("Internal server error: " + e.getMessage()));
                 });
@@ -69,7 +66,7 @@ public class VoiceController {
                 .filter(entry -> entry.getNationalCode().equals(nationalCode))
                 .findFirst()
                 .map(Mono::just)
-                .orElseGet(() -> Mono.error(new IllegalArgumentException("⛔ National code not whitelisted.")));
+                .orElseGet(() -> Mono.error(new IllegalArgumentException("❌ National code not whitelisted.")));
     }
 
     private Mono<ResponseEntity<String>> routeIntent(IntentResult intent) {
@@ -83,7 +80,7 @@ public class VoiceController {
             // case "withdraw" -> handleWithdraw(intent);
             // case "deposit" -> handleDeposit(intent);
             default -> Mono.just(ResponseEntity.badRequest()
-                    .body("⛔ Unsupported action: " + intent.getAction()));
+                    .body("❌ Unsupported action: " + intent.getAction()));
         };
     }
 
@@ -91,7 +88,7 @@ public class VoiceController {
         return askUserToConfirm(intent)
                 .flatMap(confirmed -> {
                     if (!confirmed) {
-                        return Mono.just(ResponseEntity.badRequest().body("🚫 Transfer not confirmed by user."));
+                        return Mono.just(ResponseEntity.badRequest().body("Transfer not confirmed by user."));
                     }
 
                     TransferRequest request = mapToTransferRequest(intent);
@@ -99,7 +96,7 @@ public class VoiceController {
                             .map(response -> {
                                 if ("SUCCESS".equalsIgnoreCase(response.status())) {
                                     String msg = String.format(
-                                            "✅ Transfer successful!\n🆔 Transaction ID: %s\n📄 Tracking No: %s\n📅 Date: %s",
+                                            "Transfer successful!\nTransaction ID: %s\n Tracking No: %s\n Date: %s",
                                             response.transactionId(),
                                             response.trackingNumber(),
                                             response.transactionDate()
@@ -117,7 +114,7 @@ public class VoiceController {
         String message = String.format("Do you confirm transfer of %s from %s to %s?",
                 intent.getAmount(), intent.getFromAccount(), intent.getToAccount());
 
-       // log.info("🔔 Asking user confirmation: {}", message);
+       // log.info("Asking user confirmation: {}", message);
 
         // Simulate confirmation (replace with actual logic)
         return Mono.just(true); // Simulated user confirmation
