@@ -63,6 +63,37 @@ public class OpenAiWebClient {
                 });
     }
 
+
+    public Mono<IntentResult> chat(List<Map<String, String>> messages) {
+        Map<String, Object> payload = Map.of(
+                "model", "google/gemini-pro-1.5",
+                "messages", messages,
+                "max_tokens", 1000
+        );
+
+        return webClient.post()
+                .uri("/chat/completions")
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(OpenRouterResponse.class)
+                .flatMap(response -> {
+                    if (response.getChoices() == null || response.getChoices().isEmpty()) {
+                        return Mono.error(new RuntimeException("No choices returned from OpenRouter"));
+                    }
+                    String content = response.getChoices().getFirst().getMessage().getContent();
+                    try {
+                        String cleanJson = extractJsonFromMarkdown(content);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        IntentResult intentResult = objectMapper.readValue(cleanJson, IntentResult.class);
+                        return Mono.just(intentResult);
+                    } catch (Exception e) {
+                        return Mono.error(new RuntimeException("Failed to parse IntentResult: " + e.getMessage(), e));
+                    }
+                });
+    }
+
+
     private String extractJsonFromMarkdown(String responseBody) {
         if (responseBody.startsWith("```")) {
             int start = responseBody.indexOf("{");
