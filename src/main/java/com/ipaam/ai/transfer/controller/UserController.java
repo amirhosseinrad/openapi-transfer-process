@@ -50,17 +50,17 @@ public class UserController {
             return customerInfoService.getCustomerInfo(nationalCode, birthDate)
                     .flatMap(response -> {
                         String name = response.result().data().name();
-                        String greeting = String.format(greetingMessage, name);
-                        return Mono.just(ResponseEntity.ok(new Greeting(greeting)));
+                    //    String greeting = String.format(greetingMessage, name);
+                        return Mono.just(ResponseEntity.ok(new Greeting(name,Boolean.TRUE)));
                     })
                     .onErrorResume(e -> {
                         //log.error("Error getting greeting: ", e);
-                        return Mono.just(ResponseEntity.internalServerError().body(new Greeting(fallbackMessage)));
+                        return Mono.just(ResponseEntity.internalServerError().body(new Greeting("unknown",Boolean.FALSE)));
                     });
 
         } catch (Exception e) {
             //log.error("Unexpected error in greeting controller: ", e);
-            return Mono.just(ResponseEntity.internalServerError().body(new Greeting(e.getMessage())));
+            return Mono.just(ResponseEntity.internalServerError().body(new Greeting("unknown",Boolean.FALSE)));
         }
     }
 
